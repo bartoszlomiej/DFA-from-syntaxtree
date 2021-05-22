@@ -47,6 +47,11 @@ def RegExp2Postfix(exp):
     # 5.1.1) pop them and attach to the output
     output = []
     op = []
+#    precedence = {'*':0,'?':0, '+':0, '|':1 }
+#the '' - denotes the concatenation???
+#only the or operator have the smallest precedence
+#all operators are left associative
+
     for i in exp:
         buffer = Node(i)
         if buffer.is_leaf:
@@ -60,10 +65,9 @@ def RegExp2Postfix(exp):
                 if op[-1] == "(":
                     op.pop()
             else:
-                while (op and (op[-1].data > buffer.data)):
-                    #powyzsze stwierdzenie jest bledne,
-                    #chodzi o to jaki to ma precedence
-                    #to musi byc teraz zrobione!!!!!!!!!!!!!!!
+                while (op and ((op[-1] == '|' and buffer.data == '|') or op[-1] != '|') and op[-1] != '('):
+                    output.append(op.pop())
+                op.append(buffer.data)
                 #go to the point 2) and do all subpoints of 2)
     while op:
         output.append(op.pop())

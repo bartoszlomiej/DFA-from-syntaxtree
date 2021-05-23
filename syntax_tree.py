@@ -38,9 +38,6 @@ def RegExpToString(exp):
             if counter + 1 < len(exp):
                 if a != i and a == exp[counter + 1]:#check if after symbol there is operator
                     marker = True
-                
-#                if o == i:# or o == exp[counter - 1] :
-#                    marker = True
         output.append(i)
         if not marker:
             output.append(".")
@@ -49,6 +46,7 @@ def RegExpToString(exp):
 
 
 def check_precedence(char, top):
+    '''Checks the precedence of the two characters in the regular expression'''
     precedence = {'*':2,'?':2, '+':2, '.':1,'|':0, '(':0}
     if precedence[char] <= precedence[top]:
         return True
@@ -86,8 +84,6 @@ def RegExp2Postfix(exp):
     # 5.1.1) pop them and attach to the output
     output = []
     op = []
-#the '' - denotes the concatenation???
-#only the or operator have the smallest precedence
 #all operators are left associative
 
     for i in exp:
@@ -113,12 +109,39 @@ def RegExp2Postfix(exp):
 
 
 
+#Remember to add the "#" at the end of the input string
+'''
+class TreeNode:
+    def __init__(self, char):
+        self.right = None
+        self.left = None
+        self.data = Node(char)
+    def PrintTree(self):
+        print(self.data.data)
+'''
 
+#Remember to add the "#" at the end of the input string
 class SyntaxTree:
     '''This class is a data structure that keeps the regular expression as a Syntax Tree.
     '''
-    def __init__(self):
-        self.root = Node("")
+    def __init__(self, char):
+        self.right = None
+        self.left = None
+        self.data = Node(char)
     def insert(self, char):
         self.root.data = "Delete this line pls"
- 
+        #if self.data.isLeaf == true -> this is a leaf
+        #if self.data != "" and self.data.isLeaf -> give a unique number
+        #elif this is a node -> go left and go right
+        #LOOK BELOW:
+        #Remember that the postfix notation have to be from left to right
+        #recursively. However, as a result, the Root will be the sign that
+        #spans the whole expressions
+        #e.g. a(a|b)*b is aab|*b. is:
+        #.
+        #| \
+        #(or) b
+        #|\
+        #a *
+        #  |
+        #  b

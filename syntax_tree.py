@@ -1,21 +1,44 @@
 class Node:
     '''The basic structure that keeps Node and Leafs'''
     def __init__(self, newdata):
-        '''Initialize empty data object'''
-        self.data = newdata
-        '''basic data'''
-        self.is_leaf = self.checkData()
-        '''Marker indicates whether it is a leaf or node'''
+        '''Initialize empty node/leaf object'''
+        self.data = newdata #keeps the character
+        self.is_leaf = self.check_data()#Marker indicates whether it is a leaf or node
         self.right = None
         self.left = None
-    def checkData(self):
+    def check_data(self):
+        '''Checks whether given char is a node or a leaf'''
         node_sign = ["*",  "|", "+", "?", "(", ")"]
         for i in node_sign:
             if self.data == i:
                 return False
         return True
     def __str__(self):
+        '''To print the data i convenient way'''
         return self.data
+
+def RegExpToString(exp):
+    '''Converts the string to the another notation - the concatenation symbol will be the '.' so a make to easier in later conversion to the Postfix notation'''
+    operator = ["*",  "|", "+", "?", "(", ")"]
+    output = []
+    for i in operator:
+        if exp[0] == i and i != '(': #if the expression is started with another operator, then it must be wrong.
+            return -1
+    counter = 0
+    for i in exp:
+        marker = False
+        if counter > 0:
+            for o in operator:
+                if o == i or o == exp[counter - 1]:
+                    marker = True
+            if not marker:
+                output.append(".")
+        output.append(i)
+        counter = counter + 1
+    return output
+        
+        
+        
 
 def RegExp2Postfix(exp):
     '''Converts the regular expression to the postfix notation
@@ -68,7 +91,6 @@ def RegExp2Postfix(exp):
                 while (op and ((op[-1] == '|' and buffer.data == '|') or op[-1] != '|') and op[-1] != '('):
                     output.append(op.pop())
                 op.append(buffer.data)
-                #go to the point 2) and do all subpoints of 2)
     while op:
         output.append(op.pop())
     for i in output:
@@ -77,6 +99,8 @@ def RegExp2Postfix(exp):
     #use empty symbol if no operator is needed
 
 class SyntaxTree:
+    '''This class is a data structure that keeps the regular expression as a Syntax Tree.
+    '''
     def __init__(self):
         self.root = Node("")
     def insert(self, char):

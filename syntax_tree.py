@@ -8,7 +8,7 @@ class Node:
         self.left = None
     def check_data(self):
         '''Checks whether given char is a node or a leaf'''
-        node_sign = ["*",  "|", "+", "?", "(", ")"]
+        node_sign = ["*",  "|", "+", "?", "(", ")", "."]
         for i in node_sign:
             if self.data == i:
                 return False
@@ -19,7 +19,8 @@ class Node:
 
 def RegExpToString(exp):
     '''Converts the string to the another notation - the concatenation symbol will be the '.' so a make to easier in later conversion to the Postfix notation'''
-    operator = ["*",  "|", "+", "?", "(", ")"]
+    operator = ["|", "(", ")"]
+    all_operators = ["*",  "|", "+", "?", "(", ")"]
     output = []
     for i in operator:
         if exp[0] == i and i != '(': #if the expression is started with another operator, then it must be wrong.
@@ -27,24 +28,39 @@ def RegExpToString(exp):
     counter = 0
     for i in exp:
         marker = False
-        if counter > 0:
-            for o in operator:
-                if o == i or o == exp[counter - 1]:
+        for o in operator:
+            if counter + 1 < len(exp):
+                if o == i or o == exp[counter + 1]: #check if there are two operators in the row
                     marker = True
-            if not marker:
-                output.append(".")
+            else:
+                marker = True
+        for a in all_operators:
+            if counter + 1 < len(exp):
+                if a != i and a == exp[counter + 1]:#check if after symbol there is operator
+                    marker = True
+                
+#                if o == i:# or o == exp[counter - 1] :
+#                    marker = True
         output.append(i)
+        if not marker:
+            output.append(".")
         counter = counter + 1
     return output
-        
-        
-        
+
+
+def check_precedence(char, top):
+    precedence = {'*':2,'?':2, '+':2, '.':1,'|':0, '(':0}
+    if precedence[char] <= precedence[top]:
+        return True
+    return False
+
 
 def RegExp2Postfix(exp):
     '''Converts the regular expression to the postfix notation
 
     The Shunting yard algorithm is implemented so as to convert the regular expression into the postfix notation.
     '''
+    exp = RegExpToString(exp)
     #a.(b|d)* -> abd |.*
     #a.b.c* -> ab.c*
     #a.(b|d).c* -> abd|.c*.
@@ -70,7 +86,6 @@ def RegExp2Postfix(exp):
     # 5.1.1) pop them and attach to the output
     output = []
     op = []
-#    precedence = {'*':0,'?':0, '+':0, '|':1 }
 #the '' - denotes the concatenation???
 #only the or operator have the smallest precedence
 #all operators are left associative
@@ -88,15 +103,16 @@ def RegExp2Postfix(exp):
                 if op[-1] == "(":
                     op.pop()
             else:
-                while (op and ((op[-1] == '|' and buffer.data == '|') or op[-1] != '|') and op[-1] != '('):
+                while (op and check_precedence(buffer.data, op[-1]) and op[-1] != '('):
                     output.append(op.pop())
                 op.append(buffer.data)
     while op:
         output.append(op.pop())
     for i in output:
         print(i)
-#                if not op:
-    #use empty symbol if no operator is needed
+
+
+
 
 class SyntaxTree:
     '''This class is a data structure that keeps the regular expression as a Syntax Tree.
@@ -105,3 +121,4 @@ class SyntaxTree:
         self.root = Node("")
     def insert(self, char):
         self.root.data = "Delete this line pls"
+ 

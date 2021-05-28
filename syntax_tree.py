@@ -141,46 +141,33 @@ class TreeNode:
 class SyntaxTree:
     '''This class is a data structure that keeps the regular expression as a Syntax Tree.
     '''
-    def __init__(self, char):
-        self.right = None
-        self.left = None
-        self.data = Node(char)
+    def __init__(self):
+        self.root = None
 
-    def insert(self, char):
-        self.root.data = "Delete this line pls"
-
-
-#        if char.is_leaf:
-
-#if self.data.is_leaf == true -> this is a leaf
-#if self.data != "" and self.data.is_leaf -> give a unique number
-#elif this is a node -> go left and go right
-#LOOK BELOW:
-#e.g. a(a|b)*b is aab|*b. is:
-#.
-#| \
-#(or) b
-#|\
-#a *
-#  |
-#  b
-
-
-def testing(sentence):
-    postfix = RegExp2Postfix(sentence)
-    stack = []
-    for i in postfix:
-        if not i.is_leaf:
-            if len(stack):  #checking if stack is empty
-                right = stack.pop()
+    def create(self, sentence):
+        postfix = RegExp2Postfix(sentence)
+        stack = []
+        for i in postfix:
+            if not i.is_leaf:
+                if len(stack):  #checking if stack is empty
+                    right = stack.pop()
+                else:
+                    right = Node("")
+                if len(stack):
+                    left = stack.pop()
+                else:
+                    left = Node("")
+                stack.append(TreeNode(right, left, i))
             else:
-                right = Node("")
-            if len(stack):
-                left = stack.pop()
-            else:
-                left = Node("")
-            stack.append(TreeNode(right, left, i))
-        else:
-            stack.append(i)
-    tree = stack.pop()
+                stack.append(i)
+
+        self.root = stack.pop()
+
+    def PrintTree(self):
+        self.root.PrintTree()
+
+
+def main(sentence):
+    tree = SyntaxTree()
+    tree.create(sentence)
     tree.PrintTree()

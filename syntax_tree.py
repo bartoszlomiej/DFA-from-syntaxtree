@@ -2,41 +2,51 @@ class Node:
     '''The basic structure that keeps Node and Leafs'''
     def __init__(self, newdata):
         '''Initialize empty node/leaf object'''
-        self.data = newdata #keeps the character
-        self.is_leaf = self.check_data()#Marker indicates whether it is a leaf or node
+        self.data = newdata  #keeps the character
+        self.is_leaf = self.check_data(
+        )  #Marker indicates whether it is a leaf or node
         self.right = None
         self.left = None
+
     def check_data(self):
         '''Checks whether given char is a node or a leaf'''
-        node_sign = ["*",  "|", "+", "?", "(", ")", "."]
+        node_sign = ["*", "|", "+", "?", "(", ")", "."]
         for i in node_sign:
             if self.data == i:
                 return False
         return True
+
+    def PrintTree(self):
+        print(self)
+
     def __str__(self):
         '''To print the data i convenient way'''
         return self.data
 
+
 def RegExpToString(exp):
     '''Converts the string to the another notation - the concatenation symbol will be the '.' so a make to easier in later conversion to the Postfix notation'''
     operator = ["|", "(", ")"]
-    all_operators = ["*",  "|", "+", "?", "(", ")"]
+    all_operators = ["*", "|", "+", "?", "(", ")"]
     output = []
     for i in operator:
-        if exp[0] == i and i != '(': #if the expression is started with another operator, then it must be wrong.
+        if exp[0] == i and i != '(':  #if the expression is started with another operator, then it must be wrong.
             return -1
     counter = 0
     for i in exp:
         marker = False
         for o in operator:
             if counter + 1 < len(exp):
-                if o == i or o == exp[counter + 1]: #check if there are two operators in the row
+                if o == i or o == exp[
+                        counter +
+                        1]:  #check if there are two operators in the row
                     marker = True
             else:
                 marker = True
         for a in all_operators:
             if counter + 1 < len(exp):
-                if a != i and a == exp[counter + 1]:#check if after symbol there is operator
+                if a != i and a == exp[
+                        counter + 1]:  #check if after symbol there is operator
                     marker = True
         output.append(i)
         if not marker:
@@ -47,7 +57,7 @@ def RegExpToString(exp):
 
 def check_precedence(char, top):
     '''Checks the precedence of the two characters in the regular expression'''
-    precedence = {'*':2,'?':2, '+':2, '.':1,'|':0, '(':0}
+    precedence = {'*': 2, '?': 2, '+': 2, '.': 1, '|': 0, '(': 0}
     if precedence[char] <= precedence[top]:
         return True
     return False
@@ -82,43 +92,50 @@ def RegExp2Postfix(exp):
     # 5) if there are no more token to read:
     # 5.1) while there are operators on the operator stack:
     # 5.1.1) pop them and attach to the output
-    output = []
+    output2 = []
     op = []
-#all operators are left associative
+    #all operators are left associative
 
     for i in exp:
         buffer = Node(i)
         if buffer.is_leaf:
-            output.append(buffer)
+            output2.append(buffer)
         else:
             if buffer.data == "(":
-                op.append("(")
+                op.append(buffer)
             elif buffer.data == ")":
-                while op[-1] != "(":
-                    output.append(op.pop())
-                if op[-1] == "(":
+                while op[-1].data != "(":
+                    output2.append(op.pop())
+                if op[-1].data == "(":
                     op.pop()
             else:
-                while (op and check_precedence(buffer.data, op[-1]) and op[-1] != '('):
-                    output.append(op.pop())
-                op.append(buffer.data)
+                while (op and check_precedence(buffer.data, op[-1].data)
+                       and op[-1].data != '('):
+                    output2.append(op.pop())
+                op.append(buffer)
     while op:
-        output.append(op.pop())
-    for i in output:
-        print(i)
-
+        output2.append(op.pop())
+#    for i in output2:
+#        print(i)
+    return output2
 
 
 #Remember to add the "#" at the end of the input string
-'''
+
+
 class TreeNode:
-    def __init__(self, char):
-        self.right = None
-        self.left = None
-        self.data = Node(char)
+    def __init__(self, right, left, op):
+        self.right = right
+        self.left = left
+        self.data = op
+
     def PrintTree(self):
-        print(self.data.data)
-'''
+        if self.left:
+            self.left.PrintTree()
+        print(self.data)
+        if self.right:
+            self.right.PrintTree()  #printing the tree
+
 
 #Remember to add the "#" at the end of the input string
 class SyntaxTree:
@@ -128,20 +145,42 @@ class SyntaxTree:
         self.right = None
         self.left = None
         self.data = Node(char)
+
     def insert(self, char):
         self.root.data = "Delete this line pls"
-        #if self.data.isLeaf == true -> this is a leaf
-        #if self.data != "" and self.data.isLeaf -> give a unique number
-        #elif this is a node -> go left and go right
-        #LOOK BELOW:
-        #Remember that the postfix notation have to be from left to right
-        #recursively. However, as a result, the Root will be the sign that
-        #spans the whole expressions
-        #e.g. a(a|b)*b is aab|*b. is:
-        #.
-        #| \
-        #(or) b
-        #|\
-        #a *
-        #  |
-        #  b
+
+
+#        if char.is_leaf:
+
+#if self.data.is_leaf == true -> this is a leaf
+#if self.data != "" and self.data.is_leaf -> give a unique number
+#elif this is a node -> go left and go right
+#LOOK BELOW:
+#e.g. a(a|b)*b is aab|*b. is:
+#.
+#| \
+#(or) b
+#|\
+#a *
+#  |
+#  b
+
+
+def testing(sentence):
+    postfix = RegExp2Postfix(sentence)
+    stack = []
+    for i in postfix:
+        if not i.is_leaf:
+            if len(stack):  #checking if stack is empty
+                right = stack.pop()
+            else:
+                right = Node("")
+            if len(stack):
+                left = stack.pop()
+            else:
+                left = Node("")
+            stack.append(TreeNode(right, left, i))
+        else:
+            stack.append(i)
+    tree = stack.pop()
+    tree.PrintTree()

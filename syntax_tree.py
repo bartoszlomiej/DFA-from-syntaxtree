@@ -16,9 +16,6 @@ class Node:
                 return False
         return True
 
-    def PrintTree(self):
-        print(self)
-
     def __str__(self):
         '''To print the data i convenient way'''
         return self.data
@@ -109,28 +106,55 @@ def RegExp2Postfix(exp):
                 op.append(buffer)
     while op:
         output2.append(op.pop())
-
-
-#    for i in output2:
-#        print(i)
     return output2
 
 
 class TreeNode:
+    '''Is a simple object of the tree node. It stores the information about the node children as well as it stores its data (the class Node)'''
     def __init__(self, right, left, op):
+        '''The basic constructor that takes 3 parameters: right - the right node, left - the left node, op - Node'''
         self.right = right
         self.left = left
         self.data = op
+        self.nullable = False
 
     def PrintTree(self):
+        '''Prints the tree'''
         if self.left:
             self.left.PrintTree()
         print(self.data)
         if self.right:
             self.right.PrintTree()  #printing the tree
 
+    def my_nullable(self):
+        '''Check nullable for current node'''
+        if self.data.data == "|":
+            if self.left:
+                if self.left.my_nullable():
+                    self.nullable = True
+            if self.right:
+                if self.right.my_nullable():  #printing the tree
+                    self.nullable = True
+        elif self.data.data == ".":
+            if self.left and self.right:
+                if self.left.my_nullable() and self.right.my_nullable():
+                    self.nullable = True
+        elif self.data.data == "?" or self.data.data == "*":
+            self.nullable = True
+        elif self.data.data == "":
+            self.nullable = True
 
-#Remember to add the "#" at the end of the input string
+    def is_nullable(self):
+        '''Calculating nullable for each node and leaf'''
+        if self.left:
+            self.left.my_nullable()
+            self.left.is_nullable()
+        print(self.data, self.nullable)
+        if self.right:
+            self.right.my_nullable()
+            self.right.is_nullable()
+
+
 class SyntaxTree:
     '''This class is a data structure that keeps the regular expression as a Syntax Tree.
     '''
@@ -145,22 +169,28 @@ class SyntaxTree:
                 if len(stack):  #checking if stack is empty
                     right = stack.pop()
                 else:
-                    right = Node("")
+                    right = TreeNode(None, None, Node(""))
                 if len(stack):
                     left = stack.pop()
                 else:
-                    left = Node("")
+                    left = TreeNode(None, None, Node(""))
                 stack.append(TreeNode(right, left, i))
             else:
-                stack.append(i)
+                stack.append(TreeNode(None, None, i))
 
         self.root = stack.pop()
 
     def PrintTree(self):
         self.root.PrintTree()
 
+    def check_nullable(self):
+        self.root.is_nullable()
+
 
 def main(sentence):
     tree = SyntaxTree()
     tree.create(sentence)
+    print("===Tree===")
     tree.PrintTree()
+    print("===Nullable===")
+    tree.check_nullable()

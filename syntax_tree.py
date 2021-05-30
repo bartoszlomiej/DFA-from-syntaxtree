@@ -43,8 +43,9 @@ def RegExpToString(exp):
         output.append(i)
         if not marker:
             output.append(".")
-    if output[-1] == ".":
-        output.pop()
+    if output[-1] != ".":
+        output.append(".")
+    output.append("#")  #adding special symbol to indicate important states
     return output
 
 
@@ -108,12 +109,11 @@ def RegExp2Postfix(exp):
                 op.append(buffer)
     while op:
         output2.append(op.pop())
+
+
 #    for i in output2:
 #        print(i)
     return output2
-
-
-#Remember to add the "#" at the end of the input string
 
 
 class TreeNode:

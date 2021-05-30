@@ -26,32 +26,25 @@ class Node:
 
 def RegExpToString(exp):
     '''Converts the string to the another notation - the concatenation symbol will be the '.' so a make to easier in later conversion to the Postfix notation'''
-    operator = ["|", "(", ")"]
-    all_operators = ["*", "|", "+", "?", "(", ")"]
+    op = ["*", "|", "+", "?", ")"]
     output = []
-    for i in operator:
-        if exp[0] == i and i != '(':  #if the expression is started with another operator, then it must be wrong.
-            return -1
     counter = 0
     for i in exp:
         marker = False
-        for o in operator:
-            if counter + 1 < len(exp):
-                if o == i or o == exp[
-                        counter +
-                        1]:  #check if there are two operators in the row
-                    marker = True
-            else:
-                marker = True
-        for a in all_operators:
-            if counter + 1 < len(exp):
-                if a != i and a == exp[
-                        counter + 1]:  #check if after symbol there is operator
-                    marker = True
+        for o in op:
+            if o == i:
+                if output:
+                    if output[-1] == ".":
+                        output.pop()
+        if i == "|":
+            marker = True
+        elif i == "(":
+            marker = True
         output.append(i)
         if not marker:
             output.append(".")
-        counter = counter + 1
+    if output[-1] == ".":
+        output.pop()
     return output
 
 

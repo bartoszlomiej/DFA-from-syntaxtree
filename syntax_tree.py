@@ -120,11 +120,20 @@ class TreeNode:
         self.id = 0
         self.prev_position = []
 
+    def clear_first(self):
+        if self.left:
+            self.left.clear_first()
+        self.prev_position.clear()
+        if self.right:
+            self.right.clear_first()  #printing the tree
+
     def PrintTree(self):
         '''Prints the tree'''
         if self.left:
             self.left.PrintTree()
-        print(self.data)
+        self.clear_first()
+        t = self.first()  #just for dbg
+        print(self.data, self.id, t)
         if self.right:
             self.right.PrintTree()  #printing the tree
 
@@ -167,36 +176,37 @@ class TreeNode:
                 self.id = i + 1
         return self.id
 
-        #    def first(self):
-        '''calculate first for current node'''
-        '''
+    def first(self):
+        '''calculate first for current node
+
+        important fact - as the leaves are pushed first to the right, then to the left, hence the C1 is right, and C2 is left (according to the preliminary project specification notation)'''
         if self.data.data == "|":
-            if self.left:
-                if self.left.first():
-                    return True
+            if self.left:  #this iteration is being made so as not to have nested tables
+                for i in self.left.first():
+                    self.prev_position.append(i)
             if self.right:
-                if self.right.first():  #printing the tree
-                    return True
+                for i in self.right.first():
+                    self.prev_position.append(i)
+            return self.prev_position
         elif self.data.data == ".":
             if self.left:
                 if self.left.nullable:
-                    if self.left.first():
-                        return True
-                    elif self.right:
-                        if self.right.first():
-                            return True
+                    for i in self.left.first():
+                        self.prev_position.append(i)
+                    if self.right:
+                        for i in self.right.first():
+                            self.prev_position.append(i)
+                    return self.prev_position
                 else:
-                    if self.left.first():
-                        return True
+                    return self.left.first()
         elif self.data.data == "?" or self.data.data == "*":
             if self.right:  #as the leaves are pushed to the right, then to the left
-                if self.right.first():
-                    return True
+                return self.right.first()
         elif self.data.data == "":
-            if self.right.first():
-                return Node("")
-        return False
-'''
+            return self.prev_position
+        else:
+            self.prev_position.append(self.id)
+            return self.prev_position
 
 
 class SyntaxTree:
@@ -223,6 +233,7 @@ class SyntaxTree:
                 stack.append(TreeNode(None, None, i))
 
         self.root = stack.pop()
+        self.give_id()
 
     def PrintTree(self):
         self.root.PrintTree()
@@ -233,12 +244,19 @@ class SyntaxTree:
     def give_id(self):
         self.root.give_id(0)
 
+    def calc_first(self):
+        return self.root.first()
+
 
 def main(sentence):
     tree = SyntaxTree()
     tree.create(sentence)
     print("===Tree===")
-    tree.give_id()
-    tree.PrintTree()
     print("===Nullable===")
     tree.check_nullable()
+    print("===first===")
+    #    t = tree.calc_first()
+    tree.PrintTree()
+
+
+#    print(t)

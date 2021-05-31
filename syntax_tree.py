@@ -117,6 +117,8 @@ class TreeNode:
         self.left = left
         self.data = op
         self.nullable = False
+        self.id = 0
+        self.prev_position = []
 
     def PrintTree(self):
         '''Prints the tree'''
@@ -154,6 +156,48 @@ class TreeNode:
             self.right.my_nullable()
             self.right.is_nullable()
 
+    def give_id(self, i):
+        '''Each node has its unique identifier in the tree'''
+        if self.left:
+            self.id = self.left.give_id(self.id)
+        if self.right:
+            self.id = self.right.give_id(self.id)
+        if self.data.is_leaf:
+            if self.data.data != "":
+                self.id = i + 1
+        return self.id
+
+        #    def first(self):
+        '''calculate first for current node'''
+        '''
+        if self.data.data == "|":
+            if self.left:
+                if self.left.first():
+                    return True
+            if self.right:
+                if self.right.first():  #printing the tree
+                    return True
+        elif self.data.data == ".":
+            if self.left:
+                if self.left.nullable:
+                    if self.left.first():
+                        return True
+                    elif self.right:
+                        if self.right.first():
+                            return True
+                else:
+                    if self.left.first():
+                        return True
+        elif self.data.data == "?" or self.data.data == "*":
+            if self.right:  #as the leaves are pushed to the right, then to the left
+                if self.right.first():
+                    return True
+        elif self.data.data == "":
+            if self.right.first():
+                return Node("")
+        return False
+'''
+
 
 class SyntaxTree:
     '''This class is a data structure that keeps the regular expression as a Syntax Tree.
@@ -186,11 +230,15 @@ class SyntaxTree:
     def check_nullable(self):
         self.root.is_nullable()
 
+    def give_id(self):
+        self.root.give_id(0)
+
 
 def main(sentence):
     tree = SyntaxTree()
     tree.create(sentence)
     print("===Tree===")
+    tree.give_id()
     tree.PrintTree()
     print("===Nullable===")
     tree.check_nullable()

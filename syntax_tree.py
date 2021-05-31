@@ -119,12 +119,13 @@ class TreeNode:
         self.nullable = False
         self.id = 0
         self.prev_position = []
+        self.last_prev_position = []
 
     def PrintTree(self):
         '''Prints the tree'''
         if self.left:
             self.left.PrintTree()
-        print(self.data, self.id, self.prev_position)
+        print(self.data, self.id, self.prev_position, self.last_prev_position)
         if self.right:
             self.right.PrintTree()  #printing the tree
 
@@ -171,9 +172,9 @@ class TreeNode:
         '''calculate first for current node
 
         important fact - as the leaves are pushed first to the right, then to the left, hence the C1 is right, and C2 is left (according to the preliminary project specification notation)'''
-        if self.prev_position:
+        if self.prev_position:  #blocks from repeating the code for the same node several times
             return self.prev_position
-        if self.data.data == "|":
+        if self.data.data == "|":  # return last(c1) or last(c2)
             if self.left:  #this iteration is being made so as not to have nested tables
                 for i in self.left.first():
                     self.prev_position.append(i)
@@ -209,6 +210,49 @@ class TreeNode:
         self.prev_position = t
         if self.right:
             self.right.assign_first()  #printing the tree
+
+    def last(self):
+        '''calculate last for current node
+
+        important fact - as the leaves are pushed last to the right, then to the left, hence the C1 is right, and C2 is left (according to the preliminary project specification notation)'''
+        if self.last_prev_position:  #blocks from repeating the code for the same node several times
+            return self.last_prev_position
+        if self.data.data == "|":  #return last(c1) or last(c2)
+            if self.left:  #this iteration is being made so as not to have nested tables
+                for i in self.left.last():
+                    self.last_prev_position.append(i)
+            if self.right:
+                for i in self.right.last():
+                    self.last_prev_position.append(i)
+            return self.last_prev_position
+        elif self.data.data == ".":
+            if self.right:
+                if self.right.nullable:  #if nullable(c2)
+                    for i in self.left.last():
+                        self.last_prev_position.append(i)
+                    if self.right:
+                        for i in self.right.last():
+                            self.last_prev_position.append(i)
+                    return self.last_prev_position  #return last(c1) or last(c2)
+                else:
+                    return self.right.last()  #return last(c2)
+        elif self.data.data == "?" or self.data.data == "*":
+            if self.right:
+                return self.right.last()  #return last(c1)
+        elif self.data.data == "":
+            return self.last_prev_position
+        else:
+            self.last_prev_position.append(self.id)
+            return self.last_prev_position
+
+    def assign_last(self):
+        '''Calculates the last() for each node in the tree'''
+        if self.left:
+            self.left.assign_last()
+        t = self.last()  #just for dbg
+        self.last_prev_position = t
+        if self.right:
+            self.right.assign_last()  #printing the tree
 
 
 class SyntaxTree:
@@ -249,6 +293,9 @@ class SyntaxTree:
     def calc_first(self):
         self.root.assign_first()
 
+    def calc_last(self):
+        self.root.assign_last()
+
 
 def main(sentence):
     tree = SyntaxTree()
@@ -258,4 +305,5 @@ def main(sentence):
     tree.check_nullable()
     print("===first===")
     tree.calc_first()
+    tree.calc_last()
     tree.PrintTree()

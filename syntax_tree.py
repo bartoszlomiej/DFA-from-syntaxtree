@@ -120,20 +120,11 @@ class TreeNode:
         self.id = 0
         self.prev_position = []
 
-    def clear_first(self):
-        if self.left:
-            self.left.clear_first()
-        self.prev_position.clear()
-        if self.right:
-            self.right.clear_first()  #printing the tree
-
     def PrintTree(self):
         '''Prints the tree'''
         if self.left:
             self.left.PrintTree()
-        self.clear_first()
-        t = self.first()  #just for dbg
-        print(self.data, self.id, t)
+        print(self.data, self.id, self.prev_position)
         if self.right:
             self.right.PrintTree()  #printing the tree
 
@@ -180,6 +171,8 @@ class TreeNode:
         '''calculate first for current node
 
         important fact - as the leaves are pushed first to the right, then to the left, hence the C1 is right, and C2 is left (according to the preliminary project specification notation)'''
+        if self.prev_position:
+            return self.prev_position
         if self.data.data == "|":
             if self.left:  #this iteration is being made so as not to have nested tables
                 for i in self.left.first():
@@ -207,6 +200,15 @@ class TreeNode:
         else:
             self.prev_position.append(self.id)
             return self.prev_position
+
+    def assign_first(self):
+        '''Calculates the first() for each node in the tree'''
+        if self.left:
+            self.left.assign_first()
+        t = self.first()  #just for dbg
+        self.prev_position = t
+        if self.right:
+            self.right.assign_first()  #printing the tree
 
 
 class SyntaxTree:
@@ -245,7 +247,7 @@ class SyntaxTree:
         self.root.give_id(0)
 
     def calc_first(self):
-        return self.root.first()
+        self.root.assign_first()
 
 
 def main(sentence):
@@ -255,8 +257,5 @@ def main(sentence):
     print("===Nullable===")
     tree.check_nullable()
     print("===first===")
-    #    t = tree.calc_first()
+    tree.calc_first()
     tree.PrintTree()
-
-
-#    print(t)

@@ -1,5 +1,12 @@
+'''
+Important remark: function right and left might be swaped - left should be c2 and right should be c1, however, it doesn't work like that for some reason.
+'''
+
+
 class Node:
-    '''The basic structure that keeps Node and Leafs'''
+    '''
+    The basic structure that keeps Node and Leaves
+    '''
     def __init__(self, newdata):
         '''Initialize empty node/leaf object'''
         self.data = newdata  #keeps the character
@@ -22,7 +29,9 @@ class Node:
 
 
 def RegExpToString(exp):
-    '''Converts the string to the another notation - the concatenation symbol will be the '.' so a make to easier in later conversion to the Postfix notation'''
+    '''
+    Converts the string to the another notation - the concatenation symbol will be the '.' so a make to easier in later conversion to the Postfix notation
+    '''
     op = ["*", "|", "+", "?", ")"]
     output = []
     counter = 0
@@ -55,7 +64,8 @@ def check_precedence(char, top):
 
 
 def RegExp2Postfix(exp):
-    '''Converts the regular expression to the postfix notation
+    '''
+    Converts the regular expression to the postfix notation
 
     The Shunting yard algorithm is implemented so as to convert the regular expression into the postfix notation.
     '''
@@ -110,7 +120,9 @@ def RegExp2Postfix(exp):
 
 
 class TreeNode:
-    '''Is a simple object of the tree node. It stores the information about the node children as well as it stores its data (the class Node)'''
+    '''
+    Is a simple object of the tree node. It stores the information about the node children as well as it stores its data (the class Node)
+    '''
     def __init__(self, right, left, op):
         '''The basic constructor that takes 3 parameters: right - the right node, left - the left node, op - Node'''
         self.right = right
@@ -120,17 +132,21 @@ class TreeNode:
         self.id = 0
         self.prev_position = []
         self.last_prev_position = []
+        self.follow_list = []
 
     def PrintTree(self):
         '''Prints the tree'''
         if self.left:
             self.left.PrintTree()
-        print(self.data, self.id, self.prev_position, self.last_prev_position)
+        print(self.data, self.nullable, self.id, self.prev_position,
+              self.last_prev_position, self.follow_list)
         if self.right:
             self.right.PrintTree()  #printing the tree
 
     def my_nullable(self):
-        '''Check nullable for current node'''
+        '''
+        checks if the language generate by the subtree contains the empty string ε
+        '''
         if self.data.data == "|":
             if self.left:
                 if self.left.my_nullable():
@@ -152,7 +168,6 @@ class TreeNode:
         if self.left:
             self.left.my_nullable()
             self.left.is_nullable()
-        print(self.data, self.nullable)
         if self.right:
             self.right.my_nullable()
             self.right.is_nullable()
@@ -169,27 +184,31 @@ class TreeNode:
         return self.id
 
     def first(self):
-        '''calculate first for current node
-
-        important fact - as the leaves are pushed first to the right, then to the left, hence the C1 is right, and C2 is left (according to the preliminary project specification notation)'''
+        '''
+        Returns the set of positions current under node that can match the first symbol of a string
+        '''
         if self.prev_position:  #blocks from repeating the code for the same node several times
             return self.prev_position
         if self.data.data == "|":  # return last(c1) or last(c2)
             if self.left:  #this iteration is being made so as not to have nested tables
                 for i in self.left.first():
-                    self.prev_position.append(i)
+                    if not i in self.prev_position:
+                        self.prev_position.append(i)
             if self.right:
                 for i in self.right.first():
-                    self.prev_position.append(i)
+                    if not i in self.prev_position:
+                        self.prev_position.append(i)
             return self.prev_position
         elif self.data.data == ".":
             if self.left:
-                if self.left.nullable:
+                if self.left.nullable:  #if nullable(c1)
                     for i in self.left.first():
-                        self.prev_position.append(i)
+                        if not i in self.prev_position:
+                            self.prev_position.append(i)
                     if self.right:
                         for i in self.right.first():
-                            self.prev_position.append(i)
+                            if not i in self.prev_position:  #protection from duplicates
+                                self.prev_position.append(i)
                     return self.prev_position
                 else:
                     return self.left.first()
@@ -203,7 +222,9 @@ class TreeNode:
             return self.prev_position
 
     def assign_first(self):
-        '''Calculates the first() for each node in the tree'''
+        '''
+        Performes the first() for each node in the tree
+        '''
         if self.left:
             self.left.assign_first()
         t = self.first()  #just for dbg
@@ -212,27 +233,31 @@ class TreeNode:
             self.right.assign_first()  #printing the tree
 
     def last(self):
-        '''calculate last for current node
-
-        important fact - as the leaves are pushed last to the right, then to the left, hence the C1 is right, and C2 is left (according to the preliminary project specification notation)'''
+        '''
+        Returns the set of positions under each node that can match the last symbol of a string
+        '''
         if self.last_prev_position:  #blocks from repeating the code for the same node several times
             return self.last_prev_position
         if self.data.data == "|":  #return last(c1) or last(c2)
             if self.left:  #this iteration is being made so as not to have nested tables
                 for i in self.left.last():
-                    self.last_prev_position.append(i)
+                    if not i in self.last_prev_position:
+                        self.last_prev_position.append(i)
             if self.right:
                 for i in self.right.last():
-                    self.last_prev_position.append(i)
+                    if not i in self.last_prev_position:
+                        self.last_prev_position.append(i)
             return self.last_prev_position
         elif self.data.data == ".":
             if self.right:
                 if self.right.nullable:  #if nullable(c2)
                     for i in self.left.last():
-                        self.last_prev_position.append(i)
+                        if not i in self.last_prev_position:
+                            self.last_prev_position.append(i)
                     if self.right:
                         for i in self.right.last():
-                            self.last_prev_position.append(i)
+                            if not i in self.last_prev_position:
+                                self.last_prev_position.append(i)
                     return self.last_prev_position  #return last(c1) or last(c2)
                 else:
                     return self.right.last()  #return last(c2)
@@ -246,17 +271,71 @@ class TreeNode:
             return self.last_prev_position
 
     def assign_last(self):
-        '''Calculates the last() for each node in the tree'''
+        '''
+        Performs the first() for each node in the tree
+        '''
         if self.left:
             self.left.assign_last()
-        t = self.last()  #just for dbg
+        t = self.last()
         self.last_prev_position = t
         if self.right:
-            self.right.assign_last()  #printing the tree
+            self.right.assign_last()
+
+    def find_leaf(self, id):
+        '''
+        Traverse the tree in order to find the given leaf.
+        returns the object of class Node
+        '''
+        if self.left:  #for each node in the table do:
+            self.left.find_leaf(id)
+        if self.left.data.is_leaf() and self.id == id:
+            return self.data  #check if the id and leaf matches
+        if self.right:
+            self.right.find_leaf(id)
+
+    def update_follow(self, id, second_param):
+        '''
+        Traverse the tree in order to find the given leaf.
+        returns the object of class Node
+        '''
+        if self.left:  #for each node in the table do:
+            self.left.update_follow(id, second_param)
+
+        if self.data.is_leaf and self.id == id:
+            for i in second_param:  #it is in fact follow(i) = follow(i) + second_param()
+                if not i in self.follow_list:  #so as not to store duplicates
+                    self.follow_list.append(i)
+        if self.right:
+            self.right.update_follow(id, second_param)
+
+    def follow(self):
+        '''
+        returns the set of positions that can follow the position n in the 
+        syntax tree if and only if the leaf have the input symbol (it is non-empty)
+
+        follow(i) - follow of the leaf of id i
+        '''
+        if self.data.data == ".":
+            for i in self.left.last_prev_position:
+                self.update_follow(i, self.right.prev_position)
+        elif self.data.data == "*":
+            for i in self.last_prev_position:
+                self.update_follow(i, self.prev_position)
+
+    def follow_for_each_node(self):
+        '''
+        Calculates the follow for each node
+        '''
+        if self.left:  #for each node in the table do:
+            self.left.follow_for_each_node()
+        self.follow()
+        if self.right:
+            self.right.follow_for_each_node()
 
 
 class SyntaxTree:
-    '''This class is a data structure that keeps the regular expression as a Syntax Tree.
+    '''
+    This class is a data structure that keeps the regular expression as a Syntax Tree.
     '''
     def __init__(self):
         self.root = None
@@ -296,14 +375,16 @@ class SyntaxTree:
     def calc_last(self):
         self.root.assign_last()
 
+    def follow(self):
+        self.root.follow_for_each_node()
+
 
 def main(sentence):
     tree = SyntaxTree()
     tree.create(sentence)
-    print("===Tree===")
-    print("===Nullable===")
     tree.check_nullable()
-    print("===first===")
+    print("===Print tree===")
     tree.calc_first()
     tree.calc_last()
+    tree.follow()
     tree.PrintTree()

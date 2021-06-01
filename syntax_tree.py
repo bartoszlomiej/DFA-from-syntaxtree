@@ -378,6 +378,7 @@ class DFA:
     def __init__(self):
         self.Dstate = {}
         self.Dtran = {}
+        self.final_states = []
 
     def construct(self, tree, string):
         s0 = tree.root.prev_position
@@ -389,10 +390,7 @@ class DFA:
             if self.Dstate[keys[i]] == 'unmarked':
                 self.Dstate[keys[i]] = chr(i + 65)
                 for a in string:
-                    #                    for j in self.Dstate.keys():
                     j = 0
-                    #                    keys2 = list(self.Dstate.keys())
-
                     while j < len(keys) and keys[j] != 'unmarked':
                         prev_list.clear()
                         for l in keys[j]:
@@ -403,12 +401,14 @@ class DFA:
                                 break
                             if leaf.data.data == a:
                                 if leaf.follow_list:
-                                    prev_list = prev_list + leaf.follow_list
+                                    prev_list = prev_list + leaf.follow_list  #glueing the follow
                                     if not tuple(prev_list) in self.Dstate:
                                         self.Dstate[tuple(
                                             prev_list)] = 'unmarked'
-                                    print(tuple(leaf.follow_list), a,
-                                          'iteration:', j, prev_list)
+
+
+#                                    print(tuple(leaf.follow_list), a,
+#                                          'iteration:', j, prev_list)
                                 self.Dtran[(self.Dstate[keys[i]],
                                             a)] = tuple(prev_list)
                         j = j + 1
@@ -424,17 +424,29 @@ class DFA:
 
         print("Transitions")
         print(self.Dtran)
+        for i in self.Dtran.keys():
+            if not self.Dtran[i]:
+                self.final_states.append(i[0])
+        print("Final state:", self.final_states)
 
-
+    def check_string(self, sentence):
+        state = 'A'  #it is always the initial state
+        for i in sentence:
+            if (state, i) in self.Dtran.keys():
+                state = self.Dtran[(state, i)]
+            else:
+                return False
+        if state in self.final_states:
+            return True
+        return False
 '''
 to do:
-1) There is an error with tuple - it is not added as it should be (it should be 'glued') and now it is separate
-solution:
+1) Checking the string for the given DFA
 
 '''
 
 
-def main(regex):
+def main(regex, sentence):
     tree = SyntaxTree()
     tree.create(regex)
     print("===Print tree===")
@@ -444,3 +456,4 @@ def main(regex):
     postfix = RegExpToString(regex)
     #    print("POTFIX: ", postfix)
     dfa.construct(tree, postfix)
+    print(dfa.check_string(sentence))

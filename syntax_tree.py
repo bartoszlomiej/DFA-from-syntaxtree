@@ -374,22 +374,6 @@ class SyntaxTree:
         self.root.PrintTree()
 
 
-class Dtransition:
-    def __init__(self, T, a, U):
-        self.State = {T: a}  #keeps the { State_number : letter }
-        self.Tran = U  #here will be kept the new state U
-
-
-#    def comapre(self, another):
-#        if
-'''
-Dtran = {}
-key: (state, letter)
-value: newstate
-Dtran[(state, letter)] = newstate
-'''
-
-
 class DFA:
     def __init__(self):
         self.Dstate = {}
@@ -400,6 +384,7 @@ class DFA:
         self.Dstate[tuple(s0)] = 'unmarked'
         i = 0
         keys = list(self.Dstate.keys())  #list of tuples of keys
+        prev_list = []  #keeps the follow from previous iterations
         while i < len(keys):
             if self.Dstate[keys[i]] == 'unmarked':
                 self.Dstate[keys[i]] = chr(i + 65)
@@ -407,7 +392,9 @@ class DFA:
                     #                    for j in self.Dstate.keys():
                     j = 0
                     #                    keys2 = list(self.Dstate.keys())
+
                     while j < len(keys) and keys[j] != 'unmarked':
+                        prev_list.clear()
                         for l in keys[j]:
                             leaf = tree.root.find_leaf(l)
                             if not leaf:
@@ -416,14 +403,14 @@ class DFA:
                                 break
                             if leaf.data.data == a:
                                 if leaf.follow_list:
-                                    if not tuple(
-                                            leaf.follow_list) in self.Dstate:
+                                    prev_list = prev_list + leaf.follow_list
+                                    if not tuple(prev_list) in self.Dstate:
                                         self.Dstate[tuple(
-                                            leaf.follow_list)] = 'unmarked'
+                                            prev_list)] = 'unmarked'
                                     print(tuple(leaf.follow_list), a,
-                                          'iteration:', j)
-                                    self.Dtran[(self.Dstate[keys[i]],
-                                                a)] = tuple(leaf.follow_list)
+                                          'iteration:', j, prev_list)
+                                self.Dtran[(self.Dstate[keys[i]],
+                                            a)] = tuple(prev_list)
                         j = j + 1
                 keys = list(self.Dstate.keys())
             i = i + 1
@@ -437,27 +424,12 @@ class DFA:
 
         print("Transitions")
         print(self.Dtran)
-        #        for i in self.Dtran:
-        #            print(i.Tran)
-        #            print(i.State)
-        return True
-        '''
-        i = 0
-
-        while True:
-            keys = list(self.Dstate.keys())  #list of keys
-            if i >= len(keys):
-                break
-            elif self.Dstate[keys[i]] == 'unmarked':
-                self.Dstate[keys[i]] = 'marked'
-        '''
 
 
 '''
 to do:
-1) self.Dtran[a] - is a mistake - it should be a transition for the given state (now it is a transition for the letter)!!!
-2) There is an error with tuple - it is not added as it should be (it should be 'glued') and now it is separate
-3) ==Main mistake==: there should be created pure dfa for the given RegExp, it shouldn't be influenced by the checked string. There should be another function that will check the correctness.
+1) There is an error with tuple - it is not added as it should be (it should be 'glued') and now it is separate
+solution:
 
 '''
 
@@ -470,5 +442,5 @@ def main(regex):
     print("===Print DFA===")
     dfa = DFA()
     postfix = RegExpToString(regex)
-    print("POTFIX: ", postfix)
-    print(dfa.construct(tree, postfix))
+    #    print("POTFIX: ", postfix)
+    dfa.construct(tree, postfix)

@@ -286,12 +286,18 @@ class TreeNode:
         Traverse the tree in order to find the given leaf.
         returns the object of class Node
         '''
+        ret_val = None
         if self.left:  #for each node in the table do:
-            self.left.find_leaf(id)
-        if self.left.data.is_leaf() and self.id == id:
-            return self.data  #check if the id and leaf matches
+            ret_val = self.left.find_leaf(id)
+            if ret_val:
+                return ret_val
+        if self.data.is_leaf and self.id == id:
+            return self  #check if the id and leaf matches
         if self.right:
-            self.right.find_leaf(id)
+            ret_val = self.right.find_leaf(id)
+            if ret_val:
+                return ret_val
+        return ret_val
 
     def update_follow(self, id, second_param):
         '''
@@ -358,33 +364,90 @@ class SyntaxTree:
                 stack.append(TreeNode(None, None, i))
 
         self.root = stack.pop()
-        self.give_id()
+        self.root.give_id(0)
+        self.root.is_nullable()
+        self.root.assign_first()
+        self.root.assign_last()
+        self.root.follow_for_each_node()
 
     def PrintTree(self):
         self.root.PrintTree()
 
-    def check_nullable(self):
-        self.root.is_nullable()
 
-    def give_id(self):
-        self.root.give_id(0)
+class DFA:
+    def __init__(self):
+        self.Dstate = {}
+        self.Dtran = {}
 
-    def calc_first(self):
-        self.root.assign_first()
+    def construct(self, tree, string):
+        s0 = tree.root.prev_position
+        self.Dstate[tuple(s0)] = 'unmarked'
+        i = 0
+        while True:
+            keys = list(self.Dstate.keys())  #list of tuples of keys
+            if i >= len(keys):
+                break
+            elif self.Dstate[keys[i]] == 'unmarked':
+                self.Dstate[keys[i]] = 'marked'
+                #                self.Dstate[i] == 'marked'
+                for a in string:
+                    #                    for j in self.Dstate.keys():
+                    j = 0
+                    while True:
+                        keys2 = list(self.Dstate.keys())
+                        if j >= len(keys2):
+                            break
+                        for l in keys2[j]:
+                            leaf = tree.root.find_leaf(l)
+                            if not leaf:
+                                print(
+                                    "There is no such letter in the alphabeth")
+                                break
+                            if leaf.data.data == a:
+                                if leaf.follow_list:
+                                    print(tuple(leaf.follow_list))
+                                    if not tuple(
+                                            leaf.follow_list) in self.Dstate:
+                                        self.Dstate[tuple(
+                                            leaf.follow_list)] = 'unmarked'
+                                    self.Dtran[a] = leaf.follow_list
+                                else:
+                                    print(
+                                        "This sentence is not in this RegExp")
+                                    return False
+                        j = j + 1
+            i = i + 1
+        print("States:")
+        print(self.Dstate)
+        print("Transitions")
+        print(self.Dtran)
+        return True
+        '''
+        i = 0
 
-    def calc_last(self):
-        self.root.assign_last()
+        while True:
+            keys = list(self.Dstate.keys())  #list of keys
+            if i >= len(keys):
+                break
+            elif self.Dstate[keys[i]] == 'unmarked':
+                self.Dstate[keys[i]] = 'marked'
+        '''
 
-    def follow(self):
-        self.root.follow_for_each_node()
+
+'''
+to do:
+1) self.Dtran[a] - is a mistake - it should be a transition for the given state (now it is a transition for the letter)!!!
+2) There is an error with tuple - it is not added as it should be (it should be 'glued') and now it is separate
+3) ==Main mistake==: there should be created pure dfa for the given RegExp, it shouldn't be influenced by the checked string. There should be another function that will check the correctness.
+
+'''
 
 
-def main(sentence):
+def main(regex, sentence):
     tree = SyntaxTree()
-    tree.create(sentence)
-    tree.check_nullable()
+    tree.create(regex)
     print("===Print tree===")
-    tree.calc_first()
-    tree.calc_last()
-    tree.follow()
     tree.PrintTree()
+    print("===Print DFA===")
+    dfa = DFA()
+    print(dfa.construct(tree, sentence))

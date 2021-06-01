@@ -399,22 +399,16 @@ class DFA:
         s0 = tree.root.prev_position
         self.Dstate[tuple(s0)] = 'unmarked'
         i = 0
-        while True:
-            keys = list(self.Dstate.keys())  #list of tuples of keys
-            if i >= len(keys):
-                break
-            elif self.Dstate[keys[i]] == 'unmarked':
+        keys = list(self.Dstate.keys())  #list of tuples of keys
+        while i < len(keys):
+            if self.Dstate[keys[i]] == 'unmarked':
                 self.Dstate[keys[i]] = chr(i + 65)
-                #                self.Dstate[i] == 'marked'
                 for a in string:
                     #                    for j in self.Dstate.keys():
-                    print(a)
                     j = 0
-                    while True:
-                        keys2 = list(self.Dstate.keys())
-                        if j >= len(keys2):
-                            break
-                        for l in keys2[j]:
+                    #                    keys2 = list(self.Dstate.keys())
+                    while j < len(keys) and keys[j] != 'unmarked':
+                        for l in keys[j]:
                             leaf = tree.root.find_leaf(l)
                             if not leaf:
                                 print(
@@ -422,18 +416,16 @@ class DFA:
                                 break
                             if leaf.data.data == a:
                                 if leaf.follow_list:
-                                    #      print(tuple(leaf.follow_list))
                                     if not tuple(
                                             leaf.follow_list) in self.Dstate:
                                         self.Dstate[tuple(
                                             leaf.follow_list)] = 'unmarked'
-                                    print(tuple(leaf.follow_list), a)
+                                    print(tuple(leaf.follow_list), a,
+                                          'iteration:', j)
                                     self.Dtran[(self.Dstate[keys[i]],
                                                 a)] = tuple(leaf.follow_list)
-                        # self.Dtran.append(
-                        #Dtransition(l, a, tuple(leaf.follow_list)))
-
                         j = j + 1
+                keys = list(self.Dstate.keys())
             i = i + 1
 
         print("States:")
@@ -470,11 +462,13 @@ to do:
 '''
 
 
-def main(regex, sentence):
+def main(regex):
     tree = SyntaxTree()
     tree.create(regex)
     print("===Print tree===")
     tree.PrintTree()
     print("===Print DFA===")
     dfa = DFA()
-    print(dfa.construct(tree, sentence))
+    postfix = RegExpToString(regex)
+    print("POTFIX: ", postfix)
+    print(dfa.construct(tree, postfix))

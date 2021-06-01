@@ -374,6 +374,22 @@ class SyntaxTree:
         self.root.PrintTree()
 
 
+class Dtransition:
+    def __init__(self, T, a, U):
+        self.State = {T: a}  #keeps the { State_number : letter }
+        self.Tran = U  #here will be kept the new state U
+
+
+#    def comapre(self, another):
+#        if
+'''
+Dtran = {}
+key: (state, letter)
+value: newstate
+Dtran[(state, letter)] = newstate
+'''
+
+
 class DFA:
     def __init__(self):
         self.Dstate = {}
@@ -388,10 +404,11 @@ class DFA:
             if i >= len(keys):
                 break
             elif self.Dstate[keys[i]] == 'unmarked':
-                self.Dstate[keys[i]] = 'marked'
+                self.Dstate[keys[i]] = chr(i + 65)
                 #                self.Dstate[i] == 'marked'
                 for a in string:
                     #                    for j in self.Dstate.keys():
+                    print(a)
                     j = 0
                     while True:
                         keys2 = list(self.Dstate.keys())
@@ -405,22 +422,32 @@ class DFA:
                                 break
                             if leaf.data.data == a:
                                 if leaf.follow_list:
-                                    print(tuple(leaf.follow_list))
+                                    #      print(tuple(leaf.follow_list))
                                     if not tuple(
                                             leaf.follow_list) in self.Dstate:
                                         self.Dstate[tuple(
                                             leaf.follow_list)] = 'unmarked'
-                                    self.Dtran[a] = leaf.follow_list
-                                else:
-                                    print(
-                                        "This sentence is not in this RegExp")
-                                    return False
+                                    print(tuple(leaf.follow_list), a)
+                                    self.Dtran[(self.Dstate[keys[i]],
+                                                a)] = tuple(leaf.follow_list)
+                        # self.Dtran.append(
+                        #Dtransition(l, a, tuple(leaf.follow_list)))
+
                         j = j + 1
             i = i + 1
+
         print("States:")
         print(self.Dstate)
+        #Translation of final Dtrans to states
+        for i in list(self.Dtran.keys()):
+            if self.Dtran[i] in self.Dstate.keys():
+                self.Dtran[i] = self.Dstate[self.Dtran[i]]
+
         print("Transitions")
         print(self.Dtran)
+        #        for i in self.Dtran:
+        #            print(i.Tran)
+        #            print(i.State)
         return True
         '''
         i = 0

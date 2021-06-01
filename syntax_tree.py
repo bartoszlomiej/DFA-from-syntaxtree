@@ -200,7 +200,7 @@ class TreeNode:
                     return self.prev_position
                 else:
                     return self.left.first()
-        elif self.data.data == "?" or self.data.data == "*":
+        elif self.data.data == "?" or self.data.data == "*" or self.data.data == "+":
             if self.right:  #as the leaves are pushed to the right, then to the left
                 return self.right.first()
         elif self.data.data == "":
@@ -249,7 +249,7 @@ class TreeNode:
                     return self.last_prev_position  #return last(c1) or last(c2)
                 else:
                     return self.right.last()  #return last(c2)
-        elif self.data.data == "?" or self.data.data == "*":
+        elif self.data.data == "?" or self.data.data == "*" or self.data.data == "+":
             if self.right:
                 return self.right.last()  #return last(c1)
         elif self.data.data == "":
@@ -312,7 +312,7 @@ class TreeNode:
         if self.data.data == ".":
             for i in self.left.last_prev_position:
                 self.update_follow(i, self.right.prev_position)
-        elif self.data.data == "*":
+        elif self.data.data == "*" or self.data.data == "+":
             for i in self.last_prev_position:
                 self.update_follow(i, self.prev_position)
 
@@ -449,10 +449,13 @@ class DFA:
         Prints the information about all states, transitions, and final states.
         '''
         print("States:")
-        print(self.Dstate)
+        for i in self.Dstate.keys():
+            print(i, self.Dstate[i])
         print("Transitions")
-        print(self.Dtran)
-        print("Final state:", self.final_states)
+        for i in self.Dtran.keys():
+            print(i, self.Dtran[i])
+        print("Final state:")
+        print(self.final_states)
 
     def check_string(self, sentence):
         '''
@@ -471,17 +474,7 @@ class DFA:
 
 '''
 Current issues 
-1) STH wrong with follow function
-Example:
-main('(ab)*(p|q)(p|q)*', 'abpq') -- wrong
-main('(ab)*((p|q)(p|q)*)', 'abpq') -- good
-2) Print tree in some nice way
 3) add extra features: operators '+', '?'
-
-
-Ad 1)
-The parenthesis are the issue - what they do is change in numeration from 0
-as well as the | 
 '''
 
 
@@ -495,9 +488,10 @@ def main(regex, sentence):
     postfix = RegExp2Postfix(
         regex
     )  #it is necessary, mostly to add # to the end - the final state indicator
-    #    print('Postfix:', postfix)
     dfa.construct(tree, postfix)
     dfa.printDFA()
+    print("===Checking the string===")
     print("Is '", sentence, "' in this DFA?")
     print(dfa.check_string(sentence))
+    print("===Print Tree in graphical form===")
     tree.root.print2D()

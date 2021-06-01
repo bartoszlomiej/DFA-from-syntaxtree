@@ -1,3 +1,6 @@
+COUNT = [10]  #global variable
+
+
 class Node:
     '''
     The basic structure that keeps Node and Leaves
@@ -52,8 +55,9 @@ def RegExpToString(exp):
 
 def check_precedence(char, top):
     '''Checks the precedence of the two characters in the regular expression'''
-    precedence = {'*': 2, '?': 2, '+': 2, '.': 1, '|': 0, '(': 0}
-    if precedence[char] <= precedence[top]:
+    precedence = {'*': 2, '?': 2, '+': 2, '.': 1, '|': 0, '(': 3}
+    #HERE WAS THE MAJOR CHANGE, INITIALLY IT WAS '<='
+    if precedence[char] < precedence[top]:
         return True
     return False
 
@@ -322,6 +326,24 @@ class TreeNode:
         if self.right:
             self.right.follow_for_each_node()
 
+    def print2DUtil(self, root, space):
+        # Base case
+        if (root == None):
+            return
+        space += COUNT[0]
+
+        self.print2DUtil(root.right, space)
+        print()
+        for i in range(COUNT[0], space):
+            print(end=" ")
+        print(root.data)
+        self.print2DUtil(root.left, space)
+
+    def print2D(self):
+        # space=[0]
+        # Pass initial space count as 0
+        self.print2DUtil(self, 0)
+
 
 class SyntaxTree:
     '''
@@ -449,9 +471,10 @@ class DFA:
 
 '''
 Current issues 
-1) wrong numeration of leafs
+1) STH wrong with follow function
 Example:
-main('(ab)*(p|q)(p|q)*', 'pq') -- ok
+main('(ab)*(p|q)(p|q)*', 'abpq') -- wrong
+main('(ab)*((p|q)(p|q)*)', 'abpq') -- good
 2) Print tree in some nice way
 3) add extra features: operators '+', '?'
 
@@ -477,3 +500,4 @@ def main(regex, sentence):
     dfa.printDFA()
     print("Is '", sentence, "' in this DFA?")
     print(dfa.check_string(sentence))
+    tree.root.print2D()

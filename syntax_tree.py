@@ -1,8 +1,3 @@
-'''
-Important remark: function right and left might be swaped - left should be c2 and right should be c1, however, it doesn't work like that for some reason.
-'''
-
-
 class Node:
     '''
     The basic structure that keeps Node and Leaves
@@ -24,7 +19,7 @@ class Node:
         return True
 
     def __str__(self):
-        '''To print the data i convenient way'''
+        '''To print the data in convenient way'''
         return self.data
 
 
@@ -123,13 +118,13 @@ class TreeNode:
     '''
     Is a simple object of the tree node. It stores the information about the node children as well as it stores its data (the class Node)
     '''
-    def __init__(self, right, left, op):
+    def __init__(self, right, left, op, id):
         '''The basic constructor that takes 3 parameters: right - the right node, left - the left node, op - Node'''
         self.right = right
         self.left = left
         self.data = op
         self.nullable = False
-        self.id = 0
+        self.id = id
         self.prev_position = []
         self.last_prev_position = []
         self.follow_list = []
@@ -152,7 +147,7 @@ class TreeNode:
                 if self.left.my_nullable():
                     self.nullable = True
             if self.right:
-                if self.right.my_nullable():  #printing the tree
+                if self.right.my_nullable():
                     self.nullable = True
         elif self.data.data == ".":
             if self.left and self.right:
@@ -171,17 +166,6 @@ class TreeNode:
         if self.right:
             self.right.my_nullable()
             self.right.is_nullable()
-
-    def give_id(self, i):
-        '''Each node has its unique identifier in the tree'''
-        if self.left:
-            self.id = self.left.give_id(self.id)
-        if self.right:
-            self.id = self.right.give_id(self.id)
-        if self.data.is_leaf:
-            if self.data.data != "":
-                self.id = i + 1
-        return self.id
 
     def first(self):
         '''
@@ -349,38 +333,55 @@ class SyntaxTree:
     def create(self, sentence):
         postfix = RegExp2Postfix(sentence)
         stack = []
+        counter = 1
         for i in postfix:
             if not i.is_leaf:
                 if len(stack):  #checking if stack is empty
                     right = stack.pop()
                 else:
-                    right = TreeNode(None, None, Node(""))
+                    right = TreeNode(None, None, Node(""), None)
                 if len(stack):
                     left = stack.pop()
                 else:
-                    left = TreeNode(None, None, Node(""))
-                stack.append(TreeNode(right, left, i))
+                    left = TreeNode(None, None, Node(""), None)
+                stack.append(TreeNode(right, left, i, None))
             else:
-                stack.append(TreeNode(None, None, i))
-
+                stack.append(TreeNode(None, None, i, counter))
+                counter = counter + 1
+        #performing all necessary operation that makes the syntax tree finished
         self.root = stack.pop()
-        self.root.give_id(0)
         self.root.is_nullable()
         self.root.assign_first()
         self.root.assign_last()
         self.root.follow_for_each_node()
 
     def PrintTree(self):
+        '''
+        Prints the tree starting from the root
+        '''
         self.root.PrintTree()
 
 
 class DFA:
     def __init__(self):
+        '''
+        Initialize the all variables in the DFA object
+
+        Variables:
+        Dstate - dictionary - key - set of positions , value - state spanned by those positions
+        Dtran - dictionary - key - a pair (State, letter), value -  next state
+        final_states - list - keeps all final states
+        '''
         self.Dstate = {}
         self.Dtran = {}
         self.final_states = []
 
     def construct(self, tree, string):
+        '''
+        Constructs the DFA on the basis of the syntax tree and the given regular expression.
+
+        The algorithm that is implemented can be seen in the final documentation.
+        '''
         s0 = tree.root.prev_position
         self.Dstate[tuple(s0)] = 'unmarked'
         i = 0
@@ -399,50 +400,65 @@ class DFA:
                                 print(
                                     "There is no such letter in the alphabeth")
                                 break
-                            if leaf.data.data == a:
+                            if leaf.data.data == a.data:
                                 if leaf.follow_list:
                                     prev_list = prev_list + leaf.follow_list  #glueing the follow
                                     if not tuple(prev_list) in self.Dstate:
                                         self.Dstate[tuple(
                                             prev_list)] = 'unmarked'
-
-
-#                                    print(tuple(leaf.follow_list), a,
-#                                          'iteration:', j, prev_list)
                                 self.Dtran[(self.Dstate[keys[i]],
-                                            a)] = tuple(prev_list)
+                                            a.data)] = tuple(prev_list)
                         j = j + 1
                 keys = list(self.Dstate.keys())
             i = i + 1
 
-        print("States:")
-        print(self.Dstate)
         #Translation of final Dtrans to states
         for i in list(self.Dtran.keys()):
             if self.Dtran[i] in self.Dstate.keys():
                 self.Dtran[i] = self.Dstate[self.Dtran[i]]
 
-        print("Transitions")
-        print(self.Dtran)
+        #Appending the final states to the list
         for i in self.Dtran.keys():
             if not self.Dtran[i]:
                 self.final_states.append(i[0])
+
+    def printDFA(self):
+        '''
+        Prints the information about all states, transitions, and final states.
+        '''
+        print("States:")
+        print(self.Dstate)
+        print("Transitions")
+        print(self.Dtran)
         print("Final state:", self.final_states)
 
     def check_string(self, sentence):
+        '''
+        Checks whether the given string is in the alphabeth created by constructed DFA
+        '''
         state = 'A'  #it is always the initial state
         for i in sentence:
             if (state, i) in self.Dtran.keys():
                 state = self.Dtran[(state, i)]
             else:
-                return False
+                return False  #if there is a transition to unknown state, then this string is not in this DFA
         if state in self.final_states:
             return True
         return False
-'''
-to do:
-1) Checking the string for the given DFA
 
+
+'''
+Current issues 
+1) wrong numeration of leafs
+Example:
+main('(ab)*(p|q)(p|q)*', 'pq') -- ok
+2) Print tree in some nice way
+3) add extra features: operators '+', '?'
+
+
+Ad 1)
+The parenthesis are the issue - what they do is change in numeration from 0
+as well as the | 
 '''
 
 
@@ -453,7 +469,11 @@ def main(regex, sentence):
     tree.PrintTree()
     print("===Print DFA===")
     dfa = DFA()
-    postfix = RegExpToString(regex)
-    #    print("POTFIX: ", postfix)
+    postfix = RegExp2Postfix(
+        regex
+    )  #it is necessary, mostly to add # to the end - the final state indicator
+    #    print('Postfix:', postfix)
     dfa.construct(tree, postfix)
+    dfa.printDFA()
+    print("Is '", sentence, "' in this DFA?")
     print(dfa.check_string(sentence))

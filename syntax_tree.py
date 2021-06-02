@@ -239,11 +239,11 @@ class TreeNode:
         elif self.data.data == ".":
             if self.right:
                 if self.right.nullable:  #if nullable(c2)
-                    for i in self.left.last():
+                    for i in self.right.last():
                         if not i in self.last_prev_position:
                             self.last_prev_position.append(i)
-                    if self.right:
-                        for i in self.right.last():
+                    if self.left:
+                        for i in self.left.last():
                             if not i in self.last_prev_position:
                                 self.last_prev_position.append(i)
                     return self.last_prev_position  #return last(c1) or last(c2)
@@ -474,7 +474,7 @@ class DFA:
 
 '''
 Current issues 
-3) add extra features: operators '+', '?'
+1) fix: 'a*b*' doesn't work as they are nullable
 '''
 
 
@@ -482,6 +482,7 @@ def main(regex, sentence):
     tree = SyntaxTree()
     tree.create(regex)
     print("===Print tree===")
+    print("a|null|id|first|last|follow")
     tree.PrintTree()
     print("===Print DFA===")
     dfa = DFA()
@@ -495,3 +496,55 @@ def main(regex, sentence):
     print(dfa.check_string(sentence))
     print("===Print Tree in graphical form===")
     tree.root.print2D()
+    return dfa
+
+
+def test1():
+    dfa = main('(ab)+c', 'abababc')
+    print("===Further tests===")
+    print(dfa.check_string('abc'))
+    print(dfa.check_string('abccccc'))
+    print(dfa.check_string('ababc'))
+
+
+def test2():
+    dfa = main('abc((ab)|c)*', 'abcab')
+    print("===Further tests===")
+    print(dfa.check_string('abc'))
+    print(dfa.check_string('abcc'))
+    print(dfa.check_string('abcabcabab'))
+
+
+def test3():
+    dfa = main('(a|b)*abb', 'abbabb')
+    print("===Further tests===")
+    print(dfa.check_string('abb'))
+    print(dfa.check_string('aabb'))
+
+
+def test4():
+    dfa = main('(ab)*(p|q)(p|q)*', 'abababpqpqpqpqpppqqqq')
+    print("===Further tests===")
+    print(dfa.check_string('p'))
+    print(dfa.check_string('qpppp'))
+
+
+def test5():
+    dfa = main('a(a|b*|(c+))b', 'aab')
+    print("===Further tests===")
+    print(dfa.check_string('abbbbb'))
+    print(dfa.check_string('ab'))
+
+
+def test6():
+    dfa = main('(a|b)*abb', 'abba')
+    print("===Further tests===")
+    print(dfa.check_string('abba'))
+    print(dfa.check_string('ab'))
+
+
+def test7():
+    dfa = main('abc((ab)|c) ', 'abcabc')
+    print("===Further tests===")
+    print(dfa.check_string('abba'))
+    print(dfa.check_string('ab'))

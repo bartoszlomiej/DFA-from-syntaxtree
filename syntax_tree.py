@@ -358,11 +358,11 @@ class SyntaxTree:
         counter = 1
         for i in postfix:
             if not i.is_leaf:
-                if len(stack):  #checking if stack is empty
+                if stack:  #checking if stack is empty
                     right = stack.pop()
                 else:
                     right = TreeNode(None, None, Node(""), None)
-                if len(stack):
+                if stack:
                     left = stack.pop()
                 else:
                     left = TreeNode(None, None, Node(""), None)
@@ -472,12 +472,6 @@ class DFA:
         return False
 
 
-'''
-Current issues 
-1) fix: 'a*b*' doesn't work as they are nullable
-'''
-
-
 def main(regex, sentence):
     tree = SyntaxTree()
     tree.create(regex)
@@ -544,7 +538,7 @@ def test6():
 
 
 def test7():
-    dfa = main('abc((ab)|c) ', 'abcabc')
+    dfa = main('(ab)|c ', 'abcabc')
     print("===Further tests===")
-    print(dfa.check_string('abba'))
-    print(dfa.check_string('ab'))
+    print(dfa.check_string('abc'))
+    print(dfa.check_string('abab'))
